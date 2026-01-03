@@ -35,7 +35,6 @@ export const register = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    // ✅ FIXED COOKIE (PRODUCTION SAFE)
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
@@ -88,7 +87,6 @@ export const login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    // ✅ FIXED COOKIE
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
@@ -118,7 +116,7 @@ export const logout = async (req, res) => {
     });
 
     res.status(200).json({ success: true, message: "Logout successful" });
-  } catch (error) {
+  } catch {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -154,7 +152,7 @@ export const sendVerifyOtp = async (req, res) => {
     });
 
     res.status(200).json({ success: true, message: "OTP sent successfully" });
-  } catch (error) {
+  } catch {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -198,30 +196,43 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
-/* ================= AUTH CHECK ================= */
-export const isAuthenticated = async (req, res) => {
-  try {
-    const token = req.cookies.token;
-    if (!token)
-      return res
-        .status(200)
-        .json({ success: true, isAuthenticated: false });
+/* ================= SEND RESET OTP (🔥 MISSING FIX) ================= */
+export const sendResetOtp = async (req, res) => {
+  const { email } = req.body;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await userModel.findById(decoded.id);
+  if (!email) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Email is required" });
+  }
+
+  try {
+    const user = await userModel.findOne({ email });
     if (!user)
       return res
-        .status(200)
-        .json({ success: true, isAuthenticated: false });
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
-    res.status(200).json({
-      success: true,
-      isAuthenticated: true,
-      token,
-      user,
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    user.resetOtp = otp;
+    user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
+    await user.save();
+
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: user.email,
+      subject: "Password Reset OTP",
+      html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace(
+        "{{email}}",
+        user.email
+      ),
     });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Reset OTP sent successfully" });
   } catch {
-    res.status(200).json({ success: true, isAuthenticated: false });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -251,5 +262,32 @@ export const resetPassword = async (req, res) => {
       .json({ success: true, message: "Password reset successfully" });
   } catch {
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+/* ================= AUTH CHECK ================= */
+export const isAuthenticated = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token)
+      return res
+        .status(200)
+        .json({ success: true, isAuthenticated: false });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await userModel.findById(decoded.id);
+    if (!user)
+      return res
+        .status(200)
+        .json({ success: true, isAuthenticated: false });
+
+    res.status(200).json({
+      success: true,
+      isAuthenticated: true,
+      token,
+      user,
+    });
+  } catch {
+    res.status(200).json({ success: true, isAuthenticated: false });
   }
 };
