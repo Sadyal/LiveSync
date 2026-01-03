@@ -13,7 +13,7 @@ import setupSocket from "./socket.js";
 
 const app = express();
 
-// 🔐 IMPORTANT for Render (secure cookies behind proxy)
+// 🔐 REQUIRED for Render (secure cookies behind proxy)
 app.set("trust proxy", 1);
 
 const PORT = process.env.PORT || 4000;
@@ -25,15 +25,35 @@ connectDB();
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ PRODUCTION-SAFE CORS (Vercel ↔ Render)
+// 🔴 FINAL DYNAMIC CORS (NO ORIGIN MISMATCH POSSIBLE)
+const allowedOrigins = [
+  "https://livesync-eight.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "https://livesync-eight.vercel.app", // your Vercel frontend
+    origin: function (origin, callback) {
+      // Allow non-browser requests (Postman, server-to-server)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.error("❌ CORS BLOCKED ORIGIN:", origin);
+      return callback(new Error("CORS blocked: " + origin), false);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// 🔎 TEMP DEBUG — SHOW REAL ORIGIN (REMOVE LATER)
+app.use((req, res, next) => {
+  console.log("🌍 REQUEST ORIGIN:", req.headers.origin);
+  next();
+});
 
 // ✅ Health check route
 app.get("/", (req, res) => {
@@ -46,12 +66,12 @@ app.use("/api/user", userRouter);
 app.use("/api/docs", docRouter);
 app.use("/api/admin", adminRouter);
 
-// ✅ TEMP DEBUG ROUTE (keep for testing, remove later)
+// ✅ TEMP DEBUG ROUTE
 app.patch("/api/docs/test", (req, res) => {
   res.json({ message: "PATCH /api/docs/test works fine!" });
 });
 
-// ✅ Attach socket.io to server
+// ✅ Attach socket.io
 const server = http.createServer(app);
 setupSocket(server);
 
