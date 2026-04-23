@@ -27,7 +27,7 @@ export default function setupSocket(server) {
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      // ⚡ FIX: ensure socket.userId is a string to avoid undefined issues
+
       socket.userId = decoded.id?.toString(); 
       console.log("✅ Socket Auth Success. UserID:", socket.userId);
       next();

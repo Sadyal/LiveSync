@@ -12,15 +12,18 @@ import "react-toastify/dist/ReactToastify.css";
 import { AppContent } from "./context/AppContext";
 
 const App = () => {
-  const { isLoggedIn, authChecked, user } = useContext(AppContent);
+  const context = useContext(AppContent);
 
-  if (!authChecked) return <div>Loading...</div>; // ✅ Wait for auth check
+  if (!context) return null;
 
-  // ✅ Admin route protection
+  const { isLoggedIn, authChecked, user } = context;
+
+  if (!authChecked) return <div>Loading...</div>;
+
   const AdminRoute = ({ children }) => {
-    if (!isLoggedIn) return <Navigate to="/login" />;
-    if (!user) return <div>Loading user...</div>; // Wait for user object
-    if (user.role !== "admin") return <Navigate to="/" />;
+    if (!isLoggedIn) return <Navigate to="/login" replace />;
+    if (!user) return <div>Loading user...</div>;
+    if (user.role !== "admin") return <Navigate to="/" replace />;
     return children;
   };
 
@@ -28,20 +31,19 @@ const App = () => {
     <>
       <ToastContainer theme="colored" position="top-center" />
       <Routes>
-        {/* Public routes */}
         <Route path="/" element={<Home />} />
+
         <Route
           path="/login"
-          element={!isLoggedIn ? <Login /> : <Navigate to="/" />}
+          element={!isLoggedIn ? <Login /> : <Navigate to="/" replace />}
         />
+
         <Route path="/email-verify" element={<EmailVerify />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Protected routes */}
         <Route path="/docs/:id" element={<Editor />} />
         <Route path="/video-call" element={<VideoCall />} />
 
-        {/* Admin-only route */}
         <Route
           path="/admin"
           element={
@@ -50,6 +52,8 @@ const App = () => {
             </AdminRoute>
           }
         />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );
