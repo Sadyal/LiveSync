@@ -53,4 +53,6 @@ It is built with **production-grade practices**, including JWT authentication, O
 
 ---
 
-
+ Future Updates
+ >>>>>>>> Will have the chat feature 
+ >>>>>>>> Audio Room Meeting 
