@@ -8,7 +8,7 @@ import connectDB from './config/mongodb.js';
 import authRouter from './routes/authRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import docRouter from './routes/docRoutes.js';
-import adminRouter from './routes/adminRoutes.js'; // ✅ Import admin routes
+import adminRouter from './routes/adminRoutes.js';
 import setupSocket from './socket.js';
 
 const app = express();

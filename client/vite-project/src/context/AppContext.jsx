@@ -86,14 +86,14 @@ export const AppContextProvider = (props) => {
     };
 
     checkAuth();
-  }, [logoutFlag, user]); // ✅ added user as dependency
+  }, [logoutFlag, user]);
 
   const value = {
     backendUrl,
     isLoggedIn,
     setIsLoggedIn,
     user,
-    userData: user, // alias for clarity
+    userData: user, 
     setUser,
     getUserData,
     authChecked,
