@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import EmailVerify from "./pages/emailVerify";
+import EmailVerify from "./pages/EmailVerify";
 import ResetPassword from "./pages/ResetPassword";
 import Editor from "./pages/docs/Editor";
 import VideoCall from "./pages/VideoCall";
