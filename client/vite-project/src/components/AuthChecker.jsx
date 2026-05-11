@@ -12,7 +12,7 @@ const AuthChecker = ({ children }) => {
     const validateUser = async () => {
       try {
         const { data } = await axios.get(`${backendUrl}/api/user/data`, {
-          withCredentials: true
+          withCredentials: true,
         });
 
         if (data.success) {
@@ -31,7 +31,7 @@ const AuthChecker = ({ children }) => {
     };
 
     validateUser();
-  }, []);
+  }, [backendUrl, navigate, setIsLoggedIn, setUserData]);
 
   return children;
 };

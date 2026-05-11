@@ -6,12 +6,13 @@ export const AppContent = createContext();
 
 export const AppContextProvider = (props) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null); // ✅ full user object
+  const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [logoutFlag, setLogoutFlag] = useState(false);
 
-  // ✅ fetch user data
+  // ✅ fetch user data (NO CHANGE)
   const getUserData = async () => {
     try {
       const { data } = await axios.get(`${backendUrl}/api/user/data`, {
@@ -19,8 +20,8 @@ export const AppContextProvider = (props) => {
       });
 
       if (data.success) {
-        setUser(data.user); // store in context
-        localStorage.setItem('user', JSON.stringify(data.user)); // optional: persist
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
       } else {
         setUser(null);
         toast.error(data.message || 'Failed to fetch user data');
@@ -36,7 +37,6 @@ export const AppContextProvider = (props) => {
       const path = window.location.pathname;
       const skipPaths = ['/login', '/register', '/forgot-password'];
 
-      // ✅ Allow admin route without redirect
       if (skipPaths.includes(path) || (path === '/admin' && user?.role === 'admin')) {
         setAuthChecked(true);
         return;
@@ -46,7 +46,7 @@ export const AppContextProvider = (props) => {
         setIsLoggedIn(false);
         setUser(null);
         localStorage.removeItem('token');
-        setLogoutFlag(false); // reset flag
+        setLogoutFlag(false);
         setAuthChecked(true);
         return;
       }
@@ -60,10 +60,10 @@ export const AppContextProvider = (props) => {
 
         if (data.success && data.isAuthenticated) {
           setIsLoggedIn(true);
-          await getUserData(); // fetch user with role
+          await getUserData();
 
           if (data.token) {
-            localStorage.setItem('token', data.token); // save token for socket
+            localStorage.setItem('token', data.token);
           }
         } else {
           setIsLoggedIn(false);
@@ -75,25 +75,22 @@ export const AppContextProvider = (props) => {
         setUser(null);
         localStorage.removeItem('token');
 
-        const status = error.response?.status;
-        if (status !== 401 && status !== 404) {
-          console.error('Auth check failed', error);
-          toast.error(error.response?.data?.message || 'Error during auth check');
-        }
+        // 🔇 minimized noise (only log)
+        console.log('Auth check failed');
       } finally {
         setAuthChecked(true);
       }
     };
 
     checkAuth();
-  }, [logoutFlag, user]);
+  }, [logoutFlag]);
 
   const value = {
     backendUrl,
     isLoggedIn,
     setIsLoggedIn,
     user,
-    userData: user, 
+    userData: user,
     setUser,
     getUserData,
     authChecked,

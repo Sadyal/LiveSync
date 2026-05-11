@@ -39,6 +39,7 @@ app.use(cookieParser());
 /**
  * CORS configuration:
  * - Allows requests from Vercel deployments (frontend)
+ * - Allows localhost for development ✅ (ADDED)
  * - Allows tools like Postman (no origin)
  * - Blocks unknown origins silently (no crash)
  */
@@ -47,6 +48,14 @@ app.use(
     origin: (origin, callback) => {
       // Allow server-to-server or tools like Postman
       if (!origin) return callback(null, true);
+
+      // ✅ Allow localhost (DEV)
+      if (
+        origin === "http://localhost:5173" ||
+        origin === "http://127.0.0.1:5173"
+      ) {
+        return callback(null, true);
+      }
 
       // Allow all Vercel deployments (production + preview)
       if (origin.endsWith(".vercel.app")) {
@@ -59,7 +68,7 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  }),
+  })
 );
 
 /**
