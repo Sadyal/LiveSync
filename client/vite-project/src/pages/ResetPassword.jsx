@@ -118,7 +118,7 @@ const ResetPassword = () => {
                     <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Email Address</label>
                     <div className='flex items-center gap-4 w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/5 focus-within:border-indigo-500/50 transition-all'>
                       <Mail className="w-5 h-5 text-slate-500" />
-                      <input type="email" placeholder='name@company.com' className='bg-transparent outline-none w-full text-white text-sm' value={email} onChange={e => setEmail(e.target.value)} required />
+                      <input type="email" placeholder='name@company.com' className='bg-transparent outline-none w-full text-white text-sm' value={email} onChange={e => setEmail(e.target.value)} required autoComplete="off" />
                     </div>
                   </div>
                   <button disabled={isLoading} className='w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all flex justify-center'>
@@ -142,6 +142,7 @@ const ResetPassword = () => {
                         key={index} type="text" maxLength='1' required ref={el => inputRefs.current[index] = el}
                         onInput={(e) => handleInput(e, index)} onKeyDown={(e) => handleKeyDown(e, index)}
                         className='w-12 h-14 md:w-14 md:h-16 bg-white/5 border border-white/10 text-white text-center text-2xl font-bold rounded-2xl focus:border-indigo-500/50 outline-none'
+                        autoComplete="off"
                       />
                     ))}
                   </div>
@@ -162,7 +163,7 @@ const ResetPassword = () => {
                     <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">New Password</label>
                     <div className='flex items-center gap-4 w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/5 focus-within:border-indigo-500/50 transition-all'>
                       <Lock className="w-5 h-5 text-slate-500" />
-                      <input type="password" placeholder='••••••••' className='bg-transparent outline-none w-full text-white text-sm' value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                      <input type="password" placeholder='••••••••' className='bg-transparent outline-none w-full text-white text-sm' value={newPassword} onChange={e => setNewPassword(e.target.value)} required autoComplete="off" />
                     </div>
                   </div>
                   <button disabled={isLoading} className='w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition-all flex justify-center'>

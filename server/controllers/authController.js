@@ -58,8 +58,8 @@ export const register = async (req, res) => {
       })
       .catch(() => {});
   } catch (error) {
-    console.error("Error in registration:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    console.error("❌ Error in register:", error);
+    res.status(500).json({ success: false, message: error.message || "Internal server error" });
   }
 };
 
@@ -101,8 +101,8 @@ export const login = async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email },
     });
   } catch (error) {
-    console.error("Error in login:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    console.error("❌ Error in login:", error);
+    res.status(500).json({ success: false, message: error.message || "Internal server error" });
   }
 };
 
@@ -116,8 +116,9 @@ export const logout = async (req, res) => {
     });
 
     res.status(200).json({ success: true, message: "Logout successful" });
-  } catch {
-    res.status(500).json({ success: false, message: "Internal server error" });
+  } catch (error) {
+    console.error("❌ API Error:", error);
+    res.status(500).json({ success: false, message: error.message || "Internal server error" });
   }
 };
 
@@ -152,8 +153,9 @@ export const sendVerifyOtp = async (req, res) => {
     });
 
     res.status(200).json({ success: true, message: "OTP sent successfully" });
-  } catch {
-    res.status(500).json({ success: false, message: "Internal server error" });
+  } catch (error) {
+    console.error("❌ Error in sendVerifyOtp:", error);
+    res.status(500).json({ success: false, message: error.message || "Internal server error" });
   }
 };
 
@@ -191,8 +193,9 @@ export const verifyEmail = async (req, res) => {
     res
       .status(200)
       .json({ success: true, message: "Email verified successfully" });
-  } catch {
-    res.status(500).json({ success: false, message: "Internal server error" });
+  } catch (error) {
+    console.error("❌ API Error:", error);
+    res.status(500).json({ success: false, message: error.message || "Internal server error" });
   }
 };
 
@@ -231,8 +234,9 @@ export const sendResetOtp = async (req, res) => {
     res
       .status(200)
       .json({ success: true, message: "Reset OTP sent successfully" });
-  } catch {
-    res.status(500).json({ success: false, message: "Internal server error" });
+  } catch (error) {
+    console.error("❌ Error in sendResetOtp:", error);
+    res.status(500).json({ success: false, message: error.message || "Internal server error" });
   }
 };
 
@@ -260,8 +264,9 @@ export const resetPassword = async (req, res) => {
     res
       .status(200)
       .json({ success: true, message: "Password reset successfully" });
-  } catch {
-    res.status(500).json({ success: false, message: "Internal server error" });
+  } catch (error) {
+    console.error("❌ API Error:", error);
+    res.status(500).json({ success: false, message: error.message || "Internal server error" });
   }
 };
 
@@ -287,7 +292,8 @@ export const isAuthenticated = async (req, res) => {
       token,
       user,
     });
-  } catch {
+  } catch (error) {
+    console.error("❌ Error in isAuthenticated:", error);
     res.status(200).json({ success: true, isAuthenticated: false });
   }
 };

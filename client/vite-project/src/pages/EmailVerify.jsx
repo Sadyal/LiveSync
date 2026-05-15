@@ -56,11 +56,33 @@ const EmailVerify = () => {
     });
   };
 
+  const [isLoading, setIsLoading] = useState(false);
+
+  const resendOtp = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
+      if (data.success) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Resend failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const otp = inputRefs.current.map(input => input.value).join('').trim();
-      if (otp.length !== 6) return toast.error("Enter 6-digit OTP");
+      if (otp.length !== 6) {
+        setIsLoading(false);
+        return toast.error("Enter 6-digit OTP");
+      }
 
       const response = await axios.post(
         `${backendUrl}/api/auth/verify-account`,
@@ -76,6 +98,8 @@ const EmailVerify = () => {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Verification failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -118,16 +142,17 @@ const EmailVerify = () => {
                   onInput={(e) => handleInput(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
                   className='w-12 h-14 md:w-14 md:h-16 bg-white/5 border border-white/10 text-white text-center text-2xl font-bold rounded-2xl focus:border-indigo-500/50 outline-none transition-all'
+                  autoComplete="off"
                 />
               ))}
             </div>
 
-            <button className='w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all'>
-              Confirm Verification
+            <button disabled={isLoading} className='w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all flex justify-center'>
+              {isLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "Confirm Verification"}
             </button>
             
             <p className="text-center text-slate-500 text-xs">
-              Didn't receive the code? <span className="text-indigo-400 cursor-pointer hover:underline">Resend OTP</span>
+              Didn't receive the code? <span onClick={resendOtp} className="text-indigo-400 cursor-pointer hover:underline">Resend OTP</span>
             </p>
           </form>
         </div>

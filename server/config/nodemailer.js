@@ -7,13 +7,15 @@ import nodemailer from 'nodemailer';
  */
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp-relay.brevo.com",
-  port: 465, // 🔒 SSL Port for maximum security
-  secure: true, // 🔒 Use SSL
-  pool: true, // 🚀 Use connection pooling for better performance
+  port: process.env.SMTP_PORT || 587,
+  secure: false, // Use TLS
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
+    pass: process.env.SMTP_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false, // Helps with local dev certificate issues
+  },
 });
 
 /**

@@ -114,6 +114,7 @@ const Login = () => {
                       type="text"
                       placeholder="John Doe"
                       required
+                      autoComplete="off"
                     />
                   </div>
                 </motion.div>
@@ -131,6 +132,7 @@ const Login = () => {
                   type="email"
                   placeholder="name@company.com"
                   required
+                  autoComplete="off"
                 />
               </div>
             </div>
@@ -146,6 +148,7 @@ const Login = () => {
                   type="password"
                   placeholder="••••••••"
                   required
+                  autoComplete="off"
                 />
               </div>
             </div>
@@ -175,22 +178,6 @@ const Login = () => {
               )}
             </button>
           </form>
-
-          {/* Social Auth Separator */}
-          <div className="flex items-center gap-4 my-8">
-             <div className="h-px bg-white/10 flex-1" />
-             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Secure Access</span>
-             <div className="h-px bg-white/10 flex-1" />
-          </div>
-
-          <div className="flex gap-4">
-             <button className="flex-1 py-3 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-white text-sm">
-                <Github className="w-4 h-4" /> Github
-             </button>
-             <button className="flex-1 py-3 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-white text-sm">
-                <Chrome className="w-4 h-4" /> Google
-             </button>
-          </div>
         </div>
 
         <p className="text-center text-slate-500 text-xs mt-8">
