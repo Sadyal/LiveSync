@@ -15,6 +15,9 @@ import healthRouter from "./routes/healthRoutes.js";
 // Socket setup
 import setupSocket from "./socket.js";
 
+// Cron Job setup
+import initCronJobs from "./config/cron.js";
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -28,6 +31,7 @@ app.set("trust proxy", 1);
  * Establish database connection before handling any requests.
  */
 connectDB();
+initCronJobs();
 
 /**
  * Core middlewares:
