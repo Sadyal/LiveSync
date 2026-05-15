@@ -142,6 +142,7 @@ export const sendVerifyOtp = async (req, res) => {
     user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
     await user.save();
 
+    console.log(`📩 Attempting to send Verify OTP to: ${user.email}`);
     await transporter.sendMail({
       from: `"LiveSync" <${process.env.SENDER_EMAIL}>`,
       to: user.email,
@@ -152,9 +153,13 @@ export const sendVerifyOtp = async (req, res) => {
       ),
     });
 
+    console.log("✅ Verify OTP sent successfully");
     res.status(200).json({ success: true, message: "OTP sent successfully" });
   } catch (error) {
-    console.error("❌ Error in sendVerifyOtp:", error);
+    console.error("❌ Error in sendVerifyOtp:", error.message);
+    if (error.code === 'EAUTH') {
+      console.error("🔒 SMTP Authentication Failed. Check SMTP_USER and SMTP_PASS.");
+    }
     res.status(500).json({ success: false, message: error.message || "Internal server error" });
   }
 };
@@ -221,6 +226,7 @@ export const sendResetOtp = async (req, res) => {
     user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
     await user.save();
 
+    console.log(`📩 Attempting to send Reset OTP to: ${user.email}`);
     await transporter.sendMail({
       from: `"LiveSync" <${process.env.SENDER_EMAIL}>`,
       to: user.email,
@@ -231,11 +237,15 @@ export const sendResetOtp = async (req, res) => {
       ),
     });
 
+    console.log("✅ Reset OTP sent successfully");
     res
       .status(200)
       .json({ success: true, message: "Reset OTP sent successfully" });
   } catch (error) {
-    console.error("❌ Error in sendResetOtp:", error);
+    console.error("❌ Error in sendResetOtp:", error.message);
+    if (error.code === 'EAUTH') {
+      console.error("🔒 SMTP Authentication Failed. Check SMTP_USER and SMTP_PASS.");
+    }
     res.status(500).json({ success: false, message: error.message || "Internal server error" });
   }
 };

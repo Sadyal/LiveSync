@@ -2,19 +2,22 @@
 import nodemailer from 'nodemailer';
 
 /**
- * 📧 Create transporter (Universal SMTP - Port 465 for SSL)
- * Optimized for Brevo, SendGrid, and other professional relay services.
+ * 📧 Create transporter (Universal SMTP - Port 587 for STARTTLS)
+ * Optimized for Brevo/Sendinblue and production environments.
  */
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp-relay.brevo.com",
-  port: process.env.SMTP_PORT || 587,
-  secure: process.env.SMTP_PORT == 465 || process.env.SMTP_PORT === '465', // Use TLS based on port
+  port: parseInt(process.env.SMTP_PORT) || 587,
+  secure: process.env.SMTP_PORT == 465, // true for 465, false for 587
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  pool: true, // Use connection pooling
+  maxConnections: 3,
+  maxMessages: 100,
   tls: {
-    rejectUnauthorized: false, // Helps with local dev certificate issues
+    rejectUnauthorized: false, // Prevents issues with certain SSL certificates
   },
 });
 
@@ -23,10 +26,11 @@ const transporter = nodemailer.createTransport({
  */
 transporter.verify((error, success) => {
   if (error) {
-    console.error("❌ SMTP Configuration Error (Brevo):", error.message);
+    console.error("❌ SMTP Configuration Error:", error.message);
   } else {
     console.log("🚀 SMTP Service Ready (Brevo)");
   }
 });
 
 export default transporter;
+
