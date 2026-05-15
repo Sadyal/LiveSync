@@ -2,22 +2,22 @@
 import nodemailer from 'nodemailer';
 
 /**
- * 📧 Create transporter (Universal SMTP - Port 587 for STARTTLS)
- * Optimized for Brevo/Sendinblue and production environments.
+ * 📧 Create transporter (Using Port 2525)
+ * Port 2525 is a common alternative to 587 and is less likely to be blocked by cloud firewalls.
  */
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp-relay.brevo.com",
-  port: parseInt(process.env.SMTP_PORT) || 587,
-  secure: process.env.SMTP_PORT == 465, // true for 465, false for 587
+  host: "smtp-relay.brevo.com", // Hardcoded to prevent ENV typos
+  port: 2525, 
+  secure: false, // false for 2525
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
-  pool: true, // Use connection pooling
-  maxConnections: 3,
-  maxMessages: 100,
+  pool: true, 
+  maxConnections: 1,
+  connectionTimeout: 20000, // Increased to 20s
   tls: {
-    rejectUnauthorized: false, // Prevents issues with certain SSL certificates
+    rejectUnauthorized: false, 
   },
 });
 
@@ -26,11 +26,10 @@ const transporter = nodemailer.createTransport({
  */
 transporter.verify((error, success) => {
   if (error) {
-    console.error("❌ SMTP Configuration Error:", error.message);
+    console.error("❌ SMTP Connection Failed:", error.message);
   } else {
-    console.log("🚀 SMTP Service Ready (Brevo)");
+    console.log("🚀 SMTP Service Ready (Port 2525)");
   }
 });
 
 export default transporter;
-
