@@ -141,7 +141,7 @@ const ResetPassword = () => {
                       <input
                         key={index} type="text" maxLength='1' required ref={el => inputRefs.current[index] = el}
                         onInput={(e) => handleInput(e, index)} onKeyDown={(e) => handleKeyDown(e, index)}
-                        className='w-12 h-14 md:w-14 md:h-16 bg-white/5 border border-white/10 text-white text-center text-2xl font-bold rounded-2xl focus:border-indigo-500/50 outline-none'
+                        className='w-10 sm:w-12 h-14 md:w-14 md:h-16 bg-white/5 border border-white/10 text-white text-center text-2xl font-bold rounded-2xl focus:border-indigo-500/50 outline-none'
                         autoComplete="off"
                       />
                     ))}

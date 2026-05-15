@@ -307,7 +307,7 @@ export default function VideoCall() {
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Video Grid */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="relative aspect-video bg-black/40 rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl backdrop-blur-sm group">
+            <div className="relative aspect-[3/4] md:aspect-video w-full bg-black/40 rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl backdrop-blur-sm group">
               <AnimatePresence>
                 {!remoteStreamRef.current && callState !== 'in-call' && (
                   <motion.div 
@@ -350,7 +350,7 @@ export default function VideoCall() {
               </motion.div>
 
               {/* Call Controls Overlay */}
-              {callState === 'in-call' && (
+              {(callState === 'in-call' || callState === 'calling') && (
                 <motion.div 
                   initial={{ y: 100 }}
                   animate={{ y: 0 }}
