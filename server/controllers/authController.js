@@ -51,7 +51,7 @@ export const register = async (req, res) => {
 
     transporter
       .sendMail({
-        from: process.env.SMTP_USER,
+        from: `"LiveSync" <${process.env.SENDER_EMAIL}>`,
         to: user.email,
         subject: "Welcome to Our Service",
         text: `Hello ${user.name},\n\nThank you for registering!\n\nBest regards`,
@@ -142,7 +142,7 @@ export const sendVerifyOtp = async (req, res) => {
     await user.save();
 
     await transporter.sendMail({
-      from: process.env.SMTP_USER,
+      from: `"LiveSync" <${process.env.SENDER_EMAIL}>`,
       to: user.email,
       subject: "Verify Your Account",
       html: EMAIL_VERIFY_TEMPLATE.replace("{{otp}}", otp).replace(
@@ -219,7 +219,7 @@ export const sendResetOtp = async (req, res) => {
     await user.save();
 
     await transporter.sendMail({
-      from: process.env.SMTP_USER,
+      from: `"LiveSync" <${process.env.SENDER_EMAIL}>`,
       to: user.email,
       subject: "Password Reset OTP",
       html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace(

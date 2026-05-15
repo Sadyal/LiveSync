@@ -1,15 +1,16 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { assets } from "../assets/assets";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X, ChevronDown, User, Shield, LogOut, Mail, Home, Video } from "lucide-react";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { user, backendUrl, setUser, setIsLoggedIn, setLogoutFlag } =
-    useContext(AppContent);
+  const location = useLocation();
+  const { user, backendUrl, setUser, setIsLoggedIn, setLogoutFlag } = useContext(AppContent);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -24,9 +25,7 @@ const Navbar = () => {
   const sendVerificationOtp = async () => {
     try {
       axios.defaults.withCredentials = true;
-      const { data } = await axios.post(
-        `${backendUrl}/api/auth/send-verify-otp`
-      );
+      const { data } = await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
       if (data.success) {
         setDropdownOpen(false);
         setMenuOpen(false);
@@ -42,11 +41,7 @@ const Navbar = () => {
 
   const logout = async () => {
     try {
-      const res = await axios.post(
-        `${backendUrl}/api/auth/logout`,
-        {},
-        { withCredentials: true }
-      );
+      const res = await axios.post(`${backendUrl}/api/auth/logout`, {}, { withCredentials: true });
       if (res.data.success) {
         setUser(null);
         setIsLoggedIn(false);
@@ -54,189 +49,187 @@ const Navbar = () => {
         setDropdownOpen(false);
         setMenuOpen(false);
         navigate("/login");
-      } else {
-        console.error("Logout failed:", res.data.message);
       }
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
-  const openDropdown = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
-    setDropdownOpen(true);
-  };
-
-  const scheduleCloseDropdown = (delay = 200) => {
-    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-    closeTimeoutRef.current = setTimeout(() => {
-      setDropdownOpen(false);
-      closeTimeoutRef.current = null;
-    }, delay);
-  };
+  const navLinks = [
+    { name: "Home", path: "/", icon: Home },
+    { name: "Video Call", path: "/video-call", icon: Video },
+  ];
 
   return (
-    <nav className="w-full fixed top-0 left-0 z-50 backdrop-blur-md bg-white/90 border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-        <div className="flex justify-between items-center h-16">
+    <nav className="w-full fixed top-0 left-0 z-[100] glass-light border-b border-white/20 shadow-sm transition-standard">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16 md:h-20">
           {/* Logo */}
-          <div
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
             onClick={() => navigate("/")}
-            className="flex items-center cursor-pointer hover:opacity-80 transition"
+            className="flex items-center gap-2 cursor-pointer group"
           >
-            <img src={assets.logo} alt="Logo" className="w-28 sm:w-32" />
-          </div>
+            <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform">
+               <div className="w-6 h-6 border-2 border-white rounded-md flex items-center justify-center font-bold text-white text-xs">V</div>
+            </div>
+            <span className="text-xl font-bold tracking-tight text-slate-900 bg-gradient-to-r from-slate-900 to-indigo-600 bg-clip-text text-transparent">LiveSync</span>
+          </motion.div>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-6">
-            {user ? (
-              <div
-                className="relative"
-                onMouseEnter={openDropdown}
-                onMouseLeave={() => scheduleCloseDropdown(200)}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navLinks.map((link) => (
+              <button
+                key={link.name}
+                onClick={() => navigate(link.path)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  location.pathname === link.path 
+                    ? "bg-indigo-50 text-indigo-600" 
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
               >
-                {/* Avatar */}
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold cursor-pointer shadow-md select-none ring-2 ring-transparent hover:ring-indigo-300 transition"
-                  onClick={() => setDropdownOpen((prev) => !prev)}
-                  aria-haspopup="true"
-                  aria-expanded={dropdownOpen}
-                >
-                  {user.name ? user.name[0].toUpperCase() : "?"}
-                </motion.div>
+                <link.icon className="w-4 h-4" />
+                {link.name}
+              </button>
+            ))}
+            
+            <div className="w-px h-6 bg-slate-200 mx-4" />
 
-                {/* Dropdown */}
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-3 pl-3 pr-2 py-1.5 bg-white border border-slate-200 rounded-full hover:border-indigo-300 hover:shadow-md transition-all"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                    {user.name?.[0].toUpperCase()}
+                  </div>
+                  <span className="text-sm font-medium text-slate-700 hidden lg:block">{user.name}</span>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+
                 <AnimatePresence>
                   {dropdownOpen && (
-                    <motion.ul
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-3 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-2"
-                      onMouseEnter={openDropdown}
-                      onMouseLeave={() => scheduleCloseDropdown(150)}
-                      role="menu"
-                      aria-label="Account menu"
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 py-3 z-[110]"
                     >
+                      <div className="px-4 py-3 border-b border-slate-50 mb-2">
+                        <p className="text-sm font-bold text-slate-900">{user.name}</p>
+                        <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                      </div>
+
                       {!user.isVerified && (
-                        <li
+                        <button
                           onClick={sendVerificationOtp}
-                          className="px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 cursor-pointer"
-                          role="menuitem"
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                         >
-                          Verify Email
-                        </li>
+                          <Mail className="w-4 h-4" /> Verify Email
+                        </button>
                       )}
+
                       {user.role === "admin" && (
-                        <li
-                          onClick={() => {
-                            navigate("/admin");
-                            setDropdownOpen(false);
-                          }}
-                          className="px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 cursor-pointer"
-                          role="menuitem"
+                        <button
+                          onClick={() => { navigate("/admin"); setDropdownOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                         >
-                          Admin Dashboard
-                        </li>
+                          <Shield className="w-4 h-4" /> Admin Dashboard
+                        </button>
                       )}
-                      <li
+
+                      <button
                         onClick={logout}
-                        className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
-                        role="menuitem"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
                       >
-                        Logout
-                      </li>
-                    </motion.ul>
+                        <LogOut className="w-4 h-4" /> Logout
+                      </button>
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             ) : (
               <button
                 onClick={() => navigate("/login")}
-                className="flex items-center gap-2 rounded-full px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium shadow-md hover:shadow-lg hover:opacity-90 transition"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-lg shadow-indigo-200"
               >
-                Login
-                <img src={assets.arrow_icon} alt="Arrow" className="w-4 h-4" />
+                Sign In
               </button>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
+          {/* Mobile Menu Toggle */}
+          <div className="md:hidden">
             <button
-              onClick={() => setMenuOpen((prev) => !prev)}
-              className="text-gray-700 focus:outline-none"
-              aria-label="Toggle menu"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
             >
-              {menuOpen ? (
-                <span className="material-icons">close</span>
-              ) : (
-                <span className="material-icons">menu</span>
-              )}
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="md:hidden bg-white shadow-lg border-t border-gray-200"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-white border-t border-slate-100 overflow-hidden"
           >
-            <div className="px-4 py-3 space-y-2">
+            <div className="px-4 py-6 space-y-4">
+              {navLinks.map((link) => (
+                <button
+                  key={link.name}
+                  onClick={() => { navigate(link.path); setMenuOpen(false); }}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  <link.icon className="w-5 h-5" />
+                  <span className="font-medium">{link.name}</span>
+                </button>
+              ))}
+
+              <div className="h-px bg-slate-100 mx-4 my-2" />
+
               {user ? (
-                <>
+                <div className="space-y-2">
+                  <div className="px-4 py-3">
+                    <p className="font-bold text-slate-900">{user.name}</p>
+                    <p className="text-sm text-slate-500">{user.email}</p>
+                  </div>
                   {!user.isVerified && (
-                    <div
-                      onClick={() => {
-                        sendVerificationOtp();
-                        setMenuOpen(false);
-                      }}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 cursor-pointer rounded"
+                    <button
+                      onClick={sendVerificationOtp}
+                      className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-indigo-600 bg-indigo-50 font-medium"
                     >
-                      Verify Email
-                    </div>
+                      <Mail className="w-5 h-5" /> Verify Email
+                    </button>
                   )}
                   {user.role === "admin" && (
-                    <div
-                      onClick={() => {
-                        navigate("/admin");
-                        setMenuOpen(false);
-                      }}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 cursor-pointer rounded"
+                    <button
+                      onClick={() => { navigate("/admin"); setMenuOpen(false); }}
+                      className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50"
                     >
-                      Admin Dashboard
-                    </div>
+                      <Shield className="w-5 h-5" /> Admin Dashboard
+                    </button>
                   )}
-                  <div
-                    onClick={() => {
-                      logout();
-                      setMenuOpen(false);
-                    }}
-                    className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer rounded"
+                  <button
+                    onClick={() => { logout(); setMenuOpen(false); }}
+                    className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50"
                   >
-                    Logout
-                  </div>
-                </>
+                    <LogOut className="w-5 h-5" /> Logout
+                  </button>
+                </div>
               ) : (
                 <button
-                  onClick={() => {
-                    navigate("/login");
-                    setMenuOpen(false);
-                  }}
-                  className="w-full rounded-md px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium hover:opacity-90 transition"
+                  onClick={() => { navigate("/login"); setMenuOpen(false); }}
+                  className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-100"
                 >
-                  Login
+                  Sign In
                 </button>
               )}
             </div>

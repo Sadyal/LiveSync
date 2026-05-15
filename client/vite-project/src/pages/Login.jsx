@@ -4,155 +4,199 @@ import { useNavigate } from 'react-router-dom';
 import { AppContent } from '../context/AppContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, User, ArrowRight, Github, Chrome } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
   const { backendUrl, setIsLoggedIn, getUserData, isLoggedIn, authChecked } = useContext(AppContent);
 
-  useEffect(() => {
-    if (authChecked && isLoggedIn) {
-      // ✅ Redirect based on stored user role
-      const storedUser = JSON.parse(localStorage.getItem('user'));
-      if (storedUser?.role === 'admin') {
-        navigate('/admin'); // admin dashboard route
-      } else {
-        navigate('/'); // normal user route
-      }
-    }
-  }, [authChecked, isLoggedIn]);
-
-  const [state, setState] = useState('Sign Up');
+  const [state, setState] = useState('Login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (authChecked && isLoggedIn) {
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      navigate(storedUser?.role === 'admin' ? '/admin' : '/');
+    }
+  }, [authChecked, isLoggedIn]);
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     axios.defaults.withCredentials = true;
 
     try {
       let data;
-
-      if (state === 'Sign Up') {
-        const response = await axios.post(`${backendUrl}/api/auth/register`, {
-          name,
-          email,
-          password,
-        });
-        data = response.data;
-
-        if (data.success && data.token) {
-          localStorage.setItem('token', data.token);
-        }
-      } else {
-        const response = await axios.post(`${backendUrl}/api/auth/login`, {
-          email,
-          password,
-        });
-        data = response.data;
-
-        if (data.success && data.token) {
-          localStorage.setItem('token', data.token);
-        }
-      }
+      const endpoint = state === 'Sign Up' ? '/api/auth/register' : '/api/auth/login';
+      const payload = state === 'Sign Up' ? { name, email, password } : { email, password };
+      
+      const response = await axios.post(`${backendUrl}${endpoint}`, payload);
+      data = response.data;
 
       if (data.success) {
+        if (data.token) localStorage.setItem('token', data.token);
         setIsLoggedIn(true);
-        await getUserData(); // ✅ Ensure user info is stored in localStorage as 'user'
-
-        // ✅ Redirect based on role after login
+        await getUserData();
         const storedUser = JSON.parse(localStorage.getItem('user'));
-        if (storedUser?.role === 'admin') {
-          navigate('/admin');
-        } else {
-          navigate('/');
-        }
-
-        toast.success(data.message || (state === 'Sign Up' ? 'Account created' : 'Login successful'));
+        navigate(storedUser?.role === 'admin' ? '/admin' : '/');
+        toast.success(data.message || 'Welcome to LiveSync');
       } else {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      toast.error(error.response?.data?.message || 'Authentication failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className='flex items-center justify-center min-h-screen px-6 sm:px-0 bg-gradient-to-br from-blue-200 to-purple-400'>
-      <img
-        onClick={() => navigate('/')}
-        src={assets.logo}
-        alt=""
-        className='absolute left-5 sm:left-20 top-5 w-28 sm:w-32 cursor-pointer'
-      />
-      <div className='bg-slate-900 p-10 rounded-lg shadow-lg w-full sm:w-96 text-indigo-300 text-sm'>
-        <h2 className='text-3xl font-semibold text-white text-center mb-3'>
-          {state === 'Sign Up' ? 'Create account' : 'Login!'}
-        </h2>
-        <p className='text-center text-sm mb-6'>
-          {state === 'Sign Up' ? 'Create your account' : 'Login to your account!'}
-        </p>
+    <div className='min-h-screen flex items-center justify-center p-4 bg-[#0f172a] relative overflow-hidden font-["Outfit"]'>
+      {/* Dynamic Background Elements */}
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" />
 
-        <form onSubmit={onSubmitHandler}>
-          {state === 'Sign Up' && (
-            <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
-              <img src={assets.person_icon} alt="" />
-              <input
-                onChange={(e) => setName(e.target.value)}
-                value={name}
-                className='bg-transparent outline-none w-full'
-                type="text"
-                placeholder="Full Name"
-                required
-              />
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className='w-full max-w-md relative z-10'
+      >
+        {/* Logo Section */}
+        <div className="flex flex-col items-center mb-8">
+           <motion.div 
+             whileHover={{ scale: 1.1 }}
+             onClick={() => navigate('/')}
+             className="p-4 bg-indigo-600 rounded-3xl shadow-2xl shadow-indigo-500/20 cursor-pointer mb-4"
+           >
+              <div className="w-10 h-10 border-4 border-white rounded-xl flex items-center justify-center font-bold text-white text-xl">V</div>
+           </motion.div>
+           <h1 className="text-3xl font-bold text-white tracking-tight">LiveSync</h1>
+           <p className="text-slate-400 text-sm mt-2">Next-generation real-time collaboration</p>
+        </div>
+
+        {/* Auth Card */}
+        <div className='bg-white/5 backdrop-blur-2xl border border-white/10 p-8 md:p-10 rounded-[2.5rem] shadow-2xl'>
+          <div className="flex gap-4 mb-8 p-1.5 bg-white/5 rounded-2xl">
+             <button 
+               onClick={() => setState('Login')}
+               className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${state === 'Login' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+             >
+               Login
+             </button>
+             <button 
+               onClick={() => setState('Sign Up')}
+               className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${state === 'Sign Up' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+             >
+               Register
+             </button>
+          </div>
+
+          <form onSubmit={onSubmitHandler} className="space-y-4">
+            <AnimatePresence mode="wait">
+              {state === 'Sign Up' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-1"
+                >
+                  <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Full Name</label>
+                  <div className='flex items-center gap-4 w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/5 focus-within:border-indigo-500/50 transition-all'>
+                    <User className="w-5 h-5 text-slate-500" />
+                    <input
+                      onChange={(e) => setName(e.target.value)}
+                      value={name}
+                      className='bg-transparent outline-none w-full text-white text-sm placeholder:text-slate-600'
+                      type="text"
+                      placeholder="John Doe"
+                      required
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Email Address</label>
+              <div className='flex items-center gap-4 w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/5 focus-within:border-indigo-500/50 transition-all'>
+                <Mail className="w-5 h-5 text-slate-500" />
+                <input
+                  onChange={(e) => setEmail(e.target.value)}
+                  value={email}
+                  className='bg-transparent outline-none w-full text-white text-sm placeholder:text-slate-600'
+                  type="email"
+                  placeholder="name@company.com"
+                  required
+                />
+              </div>
             </div>
-          )}
 
-          <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
-            <img src={assets.mail_icon} alt="" />
-            <input
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-              className='bg-transparent outline-none w-full'
-              type="email"
-              placeholder="Email id"
-              required
-            />
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Password</label>
+              <div className='flex items-center gap-4 w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/5 focus-within:border-indigo-500/50 transition-all'>
+                <Lock className="w-5 h-5 text-slate-500" />
+                <input
+                  onChange={(e) => setPassword(e.target.value)}
+                  value={password}
+                  className='bg-transparent outline-none w-full text-white text-sm placeholder:text-slate-600'
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+
+            {state === 'Login' && (
+              <div className="text-right">
+                <span 
+                  onClick={() => navigate('/reset-password')} 
+                  className='text-xs font-bold text-indigo-400 cursor-pointer hover:text-indigo-300 transition-colors'
+                >
+                  Forgot Password?
+                </span>
+              </div>
+            )}
+
+            <button 
+              disabled={isLoading}
+              className='w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-xl shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 group disabled:opacity-50'
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  {state}
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Social Auth Separator */}
+          <div className="flex items-center gap-4 my-8">
+             <div className="h-px bg-white/10 flex-1" />
+             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Secure Access</span>
+             <div className="h-px bg-white/10 flex-1" />
           </div>
 
-          <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
-            <img src={assets.lock_icon} alt="" />
-            <input
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-              className='bg-transparent outline-none w-full'
-              type="password"
-              placeholder="Password"
-              required
-            />
+          <div className="flex gap-4">
+             <button className="flex-1 py-3 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-white text-sm">
+                <Github className="w-4 h-4" /> Github
+             </button>
+             <button className="flex-1 py-3 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-white text-sm">
+                <Chrome className="w-4 h-4" /> Google
+             </button>
           </div>
+        </div>
 
-          <p onClick={() => navigate('/reset-password')} className='mb-4 text-indigo-500 cursor-pointer'>
-            Forgot Password
-          </p>
-
-          <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white font-medium'>
-            {state}
-          </button>
-        </form>
-
-        {state === 'Sign Up' ? (
-          <p className='text-gray-400 text-center text-xs mt-4'>
-            Already have an account?{' '}
-            <span onClick={() => setState('Login')} className='text-blue-400 cursor-pointer underline'>Login here</span>
-          </p>
-        ) : (
-          <p className='text-gray-400 text-center text-xs mt-4'>
-            Don't have an account?{' '}
-            <span onClick={() => setState('Sign Up')} className='text-blue-400 cursor-pointer underline'>Sign Up</span>
-          </p>
-        )}
-      </div>
+        <p className="text-center text-slate-500 text-xs mt-8">
+           By continuing, you agree to LiveSync's <span className="text-slate-400 underline cursor-pointer">Terms of Service</span>
+        </p>
+      </motion.div>
     </div>
   );
 };

@@ -10,6 +10,7 @@ import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import docRouter from "./routes/docRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
+import healthRouter from "./routes/healthRoutes.js";
 
 // Socket setup
 import setupSocket from "./socket.js";
@@ -57,8 +58,8 @@ app.use(
         return callback(null, true);
       }
 
-      // Allow all Vercel deployments (production + preview)
-      if (origin.endsWith(".vercel.app")) {
+      // Allow all Vercel & Render deployments
+      if (origin.endsWith(".vercel.app") || origin.endsWith(".onrender.com")) {
         return callback(null, true);
       }
 
@@ -86,6 +87,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/docs", docRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/health", healthRouter);
 
 /**
  * Create HTTP server and attach Socket.IO

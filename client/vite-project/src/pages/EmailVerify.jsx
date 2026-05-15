@@ -1,48 +1,39 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { assets } from '../assets/assets';
 import axios from 'axios';
 import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
+import { Mail, ArrowLeft, ShieldCheck } from 'lucide-react';
 
 const EmailVerify = () => {
   axios.defaults.withCredentials = true;
-  
-  // ✅ Added isLoggedIn here
   const { backendUrl, userData, getUserData, authChecked, isLoggedIn } = useContext(AppContent);
-  
   const navigate = useNavigate();
   const inputRefs = useRef([]);
-  const [userId, setUserId] = useState('');
 
-  // Fetch userData if missing
   useEffect(() => {
     const fetchDataIfMissing = async () => {
-      if (!userData || !userData._id) {
-        await getUserData();
-      }
+      if (!userData || !userData._id) await getUserData();
     };
     fetchDataIfMissing();
   }, []);
 
-  // Handle redirection if not logged in
   useEffect(() => {
     if (authChecked) {
       if (!userData || !userData.email) {
-        toast.error("Please login to verify your email");
+        toast.error("Please login to verify");
         navigate('/login');
-      } else {
-        setUserId(userData._id);
       }
     }
   }, [authChecked, userData]);
 
-  // Debug log
   useEffect(() => {
-    console.log("Current userData in EmailVerify:", userData);
-  }, [userData]);
+    if (isLoggedIn && userData && userData.isAccountVerified) {
+      navigate('/');
+    }
+  }, [isLoggedIn, userData]);
 
-  // Input handlers
   const handleInput = (e, index) => {
     if (e.target.value.length > 0 && index < inputRefs.current.length - 1) {
       inputRefs.current[index + 1].focus();
@@ -57,7 +48,7 @@ const EmailVerify = () => {
 
   const handlePaste = (e) => {
     const paste = e.clipboardData.getData('text');
-    const pasteArray = paste.split('');
+    const pasteArray = paste.split('').slice(0, 6);
     pasteArray.forEach((char, index) => {
       if (inputRefs.current[index]) {
         inputRefs.current[index].value = char;
@@ -65,90 +56,82 @@ const EmailVerify = () => {
     });
   };
 
-  // Submit handler
   const onSubmitHandler = async (e) => {
     e.preventDefault();
-
     try {
-      let id = userData?._id;
-      if (!id) {
-        await getUserData(); // re-fetch if missing
-      }
-
-      id = userData?._id;
-      if (!id) {
-        toast.error("User ID not found. Cannot proceed with OTP verification.");
-        return;
-      }
-
       const otp = inputRefs.current.map(input => input.value).join('').trim();
-
-      if (otp.length !== 6 || isNaN(otp)) {
-        toast.error("Please enter a valid 6-digit OTP");
-        return;
-      }
+      if (otp.length !== 6) return toast.error("Enter 6-digit OTP");
 
       const response = await axios.post(
         `${backendUrl}/api/auth/verify-account`,
-        { userId: id, otp },
+        { userId: userData?._id, otp },
         { withCredentials: true }
       );
 
       if (response.data.success) {
-        toast.success(response.data.message);
-        navigate("/login");
+        toast.success("Account Verified!");
+        navigate("/");
       } else {
         toast.error(response.data.message);
       }
-
     } catch (err) {
-      toast.error(err.response?.data?.message || "OTP verification failed");
+      toast.error(err.response?.data?.message || "Verification failed");
     }
   };
 
-  // ✅ Prevent visiting this page after verification
-  useEffect(() => {
-    if (isLoggedIn && userData && userData.isAccountVerified) {
-      navigate('/');
-    }
-  }, [isLoggedIn, userData]);
-
   return (
-    <div className='flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 to-purple-400'>
-      <img
-        onClick={() => navigate('/')}
-        src={assets.logo}
-        alt="Logo"
-        className='absolute left-5 sm:left-20 top-5 w-28 sm:w-32 cursor-pointer'
-      />
-
-      <form onSubmit={onSubmitHandler} className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
-        <h1 className='text-white text-2xl font-semibold text-center mb-4'>
-          Email Verify OTP
-        </h1>
-        <p className='text-center mb-6 text-indigo-300'>
-          Enter the 6-digit code sent to your email id.
-        </p>
-
-        <div className='flex justify-between mb-8' onPaste={handlePaste}>
-          {Array(6).fill(0).map((_, index) => (
-            <input
-              type="text"
-              maxLength='1'
-              key={index}
-              required
-              className='w-12 h-12 bg-[#333a5c] text-white text-center text-xl rounded-md'
-              ref={el => inputRefs.current[index] = el}
-              onInput={(e) => handleInput(e, index)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
-            />
-          ))}
-        </div>
-
-        <button className='w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full'>
-          Verify Email
+    <div className='min-h-screen flex items-center justify-center p-4 bg-[#0f172a] relative overflow-hidden font-["Outfit"]'>
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px]" />
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md relative z-10"
+      >
+        <button 
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors text-sm font-bold"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to Workspace
         </button>
-      </form>
+
+        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 p-8 md:p-10 rounded-[2.5rem] shadow-2xl">
+          <div className="flex flex-col items-center mb-8">
+            <div className="p-4 bg-indigo-600/20 rounded-2xl border border-indigo-500/30 mb-4">
+              <ShieldCheck className="w-8 h-8 text-indigo-400" />
+            </div>
+            <h1 className="text-2xl font-bold text-white text-center">Verify Identity</h1>
+            <p className="text-slate-400 text-sm text-center mt-2">
+              We've sent a 6-digit code to your inbox.
+            </p>
+          </div>
+
+          <form onSubmit={onSubmitHandler} className="space-y-8">
+            <div className="flex justify-between gap-2" onPaste={handlePaste}>
+              {Array(6).fill(0).map((_, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  maxLength='1'
+                  required
+                  ref={el => inputRefs.current[index] = el}
+                  onInput={(e) => handleInput(e, index)}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  className='w-12 h-14 md:w-14 md:h-16 bg-white/5 border border-white/10 text-white text-center text-2xl font-bold rounded-2xl focus:border-indigo-500/50 outline-none transition-all'
+                />
+              ))}
+            </div>
+
+            <button className='w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/20 transition-all'>
+              Confirm Verification
+            </button>
+            
+            <p className="text-center text-slate-500 text-xs">
+              Didn't receive the code? <span className="text-indigo-400 cursor-pointer hover:underline">Resend OTP</span>
+            </p>
+          </form>
+        </div>
+      </motion.div>
     </div>
   );
 };
