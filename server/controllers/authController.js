@@ -254,6 +254,12 @@ export const sendResetOtp = async (req, res) => {
 export const resetPassword = async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
+  if (!email || !otp || !newPassword) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Email, OTP, and new password are required" });
+  }
+
   try {
     const user = await userModel.findOne({ email });
     if (

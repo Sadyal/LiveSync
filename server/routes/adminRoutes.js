@@ -6,6 +6,7 @@ import {
   getDocByIdAdmin,
   deleteDocAdmin,
   deleteUserAdmin,
+  updateUserRole,
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -16,5 +17,6 @@ router.get("/docs", adminAuth, getAllDocs);            // Get all documents
 router.get("/docs/:id", adminAuth, getDocByIdAdmin);   // Get one document by ID
 router.delete("/docs/:id", adminAuth, deleteDocAdmin); // Delete document by ID
 router.delete("/users/:id", adminAuth, deleteUserAdmin); // Delete user by ID
+router.patch("/users/:id", adminAuth, updateUserRole); // Update user role by ID
 
 export default router;

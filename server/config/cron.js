@@ -30,8 +30,8 @@ const initCronJobs = () => {
       const result = await userModel.updateMany(
         { 
           $or: [
-            { verifyOtpExpireAt: { $lt: now } },
-            { resetOtpExpireAt: { $lt: now } }
+            { verifyOtpExpireAt: { $gt: 0, $lt: now } },
+            { resetOtpExpireAt: { $gt: 0, $lt: now } }
           ] 
         },
         { 

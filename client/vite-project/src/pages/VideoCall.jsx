@@ -117,17 +117,15 @@ export default function VideoCall() {
     });
 
     socket.on("ice-candidate", async ({ candidate }) => {
-      if (pcRef.current) {
-        try {
-          const iceCandidate = new RTCIceCandidate(candidate);
-          if (pcRef.current.remoteDescription) {
-            await pcRef.current.addIceCandidate(iceCandidate);
-          } else {
-            iceCandidatesBuffer.current.push(iceCandidate);
-          }
-        } catch (err) {
-          console.error("Error adding ice candidate:", err);
+      try {
+        const iceCandidate = new RTCIceCandidate(candidate);
+        if (pcRef.current && pcRef.current.remoteDescription) {
+          await pcRef.current.addIceCandidate(iceCandidate);
+        } else {
+          iceCandidatesBuffer.current.push(iceCandidate);
         }
+      } catch (err) {
+        console.error("Error adding ice candidate:", err);
       }
     });
 
