@@ -60,6 +60,8 @@ const Editor = () => {
     editor.disable();
     quillInstanceRef.current = editor;
 
+    let interval;
+
     socket.once("load-document", (document) => {
       editor.setContents(document);
       editor.enable();
@@ -75,17 +77,12 @@ const Editor = () => {
         editor.updateContents(delta);
       });
 
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         if (editor && typeof editor.getContents === "function") {
           socket.emit("save-document", editor.getContents());
           setSyncStatus("synced");
         }
       }, SAVE_INTERVAL_MS);
-
-      return () => {
-        socket.disconnect();
-        clearInterval(interval);
-      };
     });
 
     socket.once("access-denied", () => {
@@ -94,6 +91,12 @@ const Editor = () => {
     });
 
     socket.emit("get-document", docId);
+
+    // Clean up socket and save interval when leaving page
+    return () => {
+      socket.disconnect();
+      if (interval) clearInterval(interval);
+    };
   }, [docId, backendUrl, navigate]);
 
   const handleDownload = async () => {

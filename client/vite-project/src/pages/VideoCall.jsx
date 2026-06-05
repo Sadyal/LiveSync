@@ -37,6 +37,13 @@ export default function VideoCall() {
   const [videoOff, setVideoOff] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState("disconnected");
 
+  const callStateRef = useRef("idle");
+
+  // Keep callStateRef in sync with state transitions without re-triggering effect
+  useEffect(() => {
+    callStateRef.current = callState;
+  }, [callState]);
+
   const socketRef = useRef(null);
   const pcRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -86,7 +93,7 @@ export default function VideoCall() {
     socket.on("your-socket-id", ({ socketId }) => setMySocketId(socketId));
 
     socket.on("call-made", async ({ from, offer }) => {
-      if (callState !== "idle") {
+      if (callStateRef.current !== "idle") {
         socket.emit("hang-up", { to: from }); // Busy
         return;
       }
@@ -133,7 +140,7 @@ export default function VideoCall() {
       socket.disconnect();
       endCall();
     };
-  }, [backendUrl, callState, endCall]);
+  }, [backendUrl, endCall]);
 
   const initLocalStream = async () => {
     try {

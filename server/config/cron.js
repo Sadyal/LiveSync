@@ -8,19 +8,20 @@ import userModel from '../models/userModel.js';
 const initCronJobs = () => {
   
   // 1️⃣ Keep-Alive Job (Pings the server every 14 minutes)
-  // Useful for preventing Render/Railway/Heroku free tiers from sleeping.
   cron.schedule('*/14 * * * *', async () => {
     try {
-      const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 4000}`;
-      console.log('📡 Cron: Pinging server to keep it alive...');
+      // Use SERVER_URL or Render's built-in external hostname
+      const serverUrl = process.env.SERVER_URL || (process.env.RENDER_EXTERNAL_HOSTNAME ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME}` : `http://localhost:${process.env.PORT || 4000}`);
+      
+      console.log('📡 Cron: Keep-alive pinging server...');
       await axios.get(`${serverUrl}/`);
     } catch (error) {
-      console.error('❌ Cron: Keep-alive ping failed:', error.message);
+      // It's normal for this to fail during deployments or cold starts
+      console.log('📡 Cron: Keep-alive ping skipped (server might be starting)');
     }
   });
 
-  // 2️⃣ Database Cleanup Job (Runs every midnight at 00:00)
-  // Cleans up expired OTPs from the user records.
+  // 2️⃣ Database Cleanup Job (Runs every midnight)
   cron.schedule('0 0 * * *', async () => {
     try {
       console.log('🧹 Cron: Cleaning up expired OTPs...');
@@ -35,7 +36,7 @@ const initCronJobs = () => {
         },
         { 
           $set: { 
-            verifyOtp: 0, 
+            verifyOtp: "", 
             verifyOtpExpireAt: 0,
             resetOtp: "",
             resetOtpExpireAt: 0
@@ -53,3 +54,4 @@ const initCronJobs = () => {
 };
 
 export default initCronJobs;
+

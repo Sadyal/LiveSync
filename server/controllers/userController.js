@@ -21,9 +21,11 @@ if (!user) {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role, // ✅ ADDED THIS
         isAccountVerified: user.isAccountVerified
       }
     });
+
 
   } catch (error) {
     console.error("Error in getUserData:", error);

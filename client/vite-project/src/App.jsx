@@ -20,6 +20,11 @@ const App = () => {
 
   if (!authChecked) return <div>Loading...</div>;
 
+  const ProtectedRoute = ({ children }) => {
+    if (!isLoggedIn) return <Navigate to="/login" replace />;
+    return children;
+  };
+
   const AdminRoute = ({ children }) => {
     if (!isLoggedIn) return <Navigate to="/login" replace />;
     if (!user) return <div>Loading user...</div>;
@@ -31,7 +36,14 @@ const App = () => {
     <>
       <ToastContainer theme="colored" position="top-center" />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/login"
@@ -41,8 +53,22 @@ const App = () => {
         <Route path="/email-verify" element={<EmailVerify />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        <Route path="/docs/:id" element={<Editor />} />
-        <Route path="/video-call" element={<VideoCall />} />
+        <Route
+          path="/docs/:id"
+          element={
+            <ProtectedRoute>
+              <Editor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/video-call"
+          element={
+            <ProtectedRoute>
+              <VideoCall />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/admin"
